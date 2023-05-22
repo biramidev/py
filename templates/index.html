@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Scraping App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            margin: 20px auto;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .export-form {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .export-form button {
+            background-color: #008CBA;
+        }
+
+        .export-form button:hover {
+            background-color: #006C9A;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Scraping App</h1>
+    <form action="/scrape" method="post">
+        <label for="url">URL:</label>
+        <input type="text" name="url" id="url" required>
+        <button type="submit">Scrape</button>
+    </form>
+    {% if data %}
+    <h2>Scraped Data:</h2>
+    <ul>
+        {% for item in data %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    <form action="/export" method="post" class="export-form">
+        <input type="hidden" name="url" value="{{ request.form.url }}">
+        <button type="submit">Export as CSV</button>
+    </form>
+    {% endif %}
+</body>
+</html>
+
