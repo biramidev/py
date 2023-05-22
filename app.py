@@ -22,27 +22,19 @@ def scrape_data(url):
         address_elements = soup.select('.address')
         twitter_elements = soup.select('a[href^=https://twitter]')
 
-        # Extract the text from the elements
-        emails = [email['href'][7:] for email in email_elements]
-        contact_info = [info.get_text(strip=True) for info in contact_info_elements]
-        phones = [phone.get_text(strip=True) for phone in phone_elements]
-        websites = [website['href'] for website in website_elements]
-        addresses = [address.get_text(strip=True) for address in address_elements]
-        twitters = [twitter['href'] for twitter in twitter_elements]
+        # Print the scraped data for debugging purposes
+        print('Emails:', [email['href'][7:] for email in email_elements])
+        print('Contact Info:', [info.get_text(strip=True) for info in contact_info_elements])
+        print('Phone Numbers:', [phone.get_text(strip=True) for phone in phone_elements])
+        print('Websites:', [website['href'] for website in website_elements])
+        print('Addresses:', [address.get_text(strip=True) for address in address_elements])
+        print('Twitter Profiles:', [twitter['href'] for twitter in twitter_elements])
 
-        # Return the scraped data as a dictionary
-        scraped_data = {
-            'emails': emails,
-            'contact_info': contact_info,
-            'phones': phones,
-            'websites': websites,
-            'addresses': addresses,
-            'twitters': twitters
-        }
-
-        return scraped_data
+        return None  # Return None to indicate no error occurred
     else:
-        return None
+        print('Request failed with status code:', response.status_code)
+        return response.status_code  # Return the status code indicating an error occurred
+
 
 
 @app.route('/', methods=['GET', 'POST'])
