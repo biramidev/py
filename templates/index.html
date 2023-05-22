@@ -1,92 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Web Scraping App</title>
+    <title>Web Scraping Application</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        form {
-            margin: 20px auto;
-            width: 400px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        label {
-            margin-bottom: 10px;
-        }
-
-        input[type="text"] {
-            padding: 5px;
-            width: 300px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        h2 {
-            margin-top: 20px;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin-bottom: 10px;
-        }
-
-        .export-form {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .export-form button {
-            background-color: #008CBA;
-        }
-
-        .export-form button:hover {
-            background-color: #006C9A;
-        }
+        /* Add your custom CSS styles here */
     </style>
 </head>
 <body>
-    <h1>Web Scraping App</h1>
-    <form action="/scrape" method="post">
-        <label for="url">URL:</label>
-        <input type="text" name="url" id="url" required>
-        <button type="submit">Scrape</button>
+    <h1>Web Scraping Application</h1>
+    <form method="POST" action="/">
+        <label for="url">Enter URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Scrape Data</button>
     </form>
-    {% if data %}
+
     <h2>Scraped Data:</h2>
-    <ul>
-        {% for item in data %}
-        <li>{{ item }}</li>
-        {% endfor %}
-    </ul>
-    <form action="/export" method="post" class="export-form">
-        <input type="hidden" name="url" value="{{ request.form.url }}">
-        <button type="submit">Export as CSV</button>
-    </form>
-    {% endif %}
+    <div id="scraped-data"></div>
+
+    <script>
+        const form = document.querySelector('form');
+        const scrapedDataDiv = document.getElementById('scraped-data');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('url').value;
+
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Display the scraped data on the page
+                    const dataHtml = `
+                        <h3>Emails:</h3>
+                        <ul>${data.emails.map(email => `<li>${email}</li>`).join('')}</ul>
+                        <h3>Contact Info:</h3>
+                        <ul>${data.contact_info.map(info => `<li>${info}</li>`).join('')}</ul>
+                        <h3>Phone Numbers:</h3>
+                        <ul>${data.phones.map(phone => `<li>${phone}</li>`).join('')}</ul>
+                        <h3>Websites:</h3>
+                        <ul>${data.websites.map(website => `<li>${website}</li>`).join('')}</ul>
+                        <h3>Addresses:</h3>
+                        <ul>${data.addresses.map(address => `<li>${address}</li>`).join('')}</ul>
+                        <h3>Twitter Profiles:</h3>
+                        <ul>${data.twitters.map(twitter => `<li>${twitter}</li>`).join('')}</ul>
+                        <h4><a href="/scraped_data.csv" download>Download CSV</a></h4>
+                    `;
+
+                    scrapedDataDiv.innerHTML = dataHtml;
+                } else {
+                    scrapedDataDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                console.log(error);
+                scrapedDataDiv.innerHTML = '<p>An error occurred.</p>';
+            }
+        });
+    </script>
 </body>
 </html>
-
