@@ -6,36 +6,29 @@ import csv
 app = Flask(__name__)
 
 def scrape_data(url):
-    # Make a request to the provided URL
     response = requests.get(url)
 
-    # Check if the request was successful
     if response.status_code == 200:
-        # Parse the HTML content of the page
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Find the elements containing the desired data
-        email_elements = soup.select('a[href^=mailto]')
-        contact_info_elements = soup.select('.contact-info')
-        phone_elements = soup.select('.phone-number')
-        website_elements = soup.select('a[href^=http]')
-        address_elements = soup.select('.address')
-        twitter_elements = soup.select('a[href^=https://twitter]')
+        # Extract data
+        emails = [email['href'][7:] for email in soup.select('a[href^=mailto]')]
+        contact_info = [info.get_text(strip=True) for info in soup.select('.contact-info')]
+        phones = [phone.get_text(strip=True) for phone in soup.select('.phone-number')]
+        websites = [website['href'] for website in soup.select('a[href^=http]')]
+        addresses = [address.get_text(strip=True) for address in soup.select('.address')]
+        twitters = [twitter['href'] for twitter in soup.select('a[href^=https://twitter]')]
 
-        # Print the scraped data for debugging purposes
-        print('Emails:', [email['href'][7:] for email in email_elements])
-        print('Contact Info:', [info.get_text(strip=True) for info in contact_info_elements])
-        print('Phone Numbers:', [phone.get_text(strip=True) for phone in phone_elements])
-        print('Websites:', [website['href'] for website in website_elements])
-        print('Addresses:', [address.get_text(strip=True) for address in address_elements])
-        print('Twitter Profiles:', [twitter['href'] for twitter in twitter_elements])
-
-        return None  # Return None to indicate no error occurred
+        return {
+            'emails': emails,
+            'contact_info': contact_info,
+            'phones': phones,
+            'websites': websites,
+            'addresses': addresses,
+            'twitters': twitters
+        }
     else:
-        print('Request failed with status code:', response.status_code)
-        return response.status_code  # Return the status code indicating an error occurred
-
-
+        return None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -43,19 +36,19 @@ def index():
         url = request.form['url']
         data = scrape_data(url)
 
-        if data is not None:
-            # Export data to CSV file
+        if data:
+            # Export data to CSV
             with open('scraped_data.csv', 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(['Emails', 'Contact Info', 'Phone Numbers', 'Websites', 'Addresses', 'Twitter Profiles'])
-                writer.writerows(zip(data['emails'], data['contact_info'], data['phones'], data['websites'], data['addresses'], data['twitters']))
+                rows = zip(data['emails'], data['contact_info'], data['phones'], data['websites'], data['addresses'], data['twitters'])
+                writer.writerows(rows)
 
             return jsonify(data)
         else:
             return jsonify({'error': 'Failed to scrape data.'})
 
     return render_template('index.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
